@@ -1,0 +1,18 @@
+﻿.gradle/
+**/build/
+.idea/
+local.properties
+*.iml
+*.hprof
+.DS_Store
+Thumbs.db
+
+# Signing files and credentials
+*.jks
+*.keystore
+key.properties
+keystore.properties
+
+# Environment files and secrets
+.env
+.env.*

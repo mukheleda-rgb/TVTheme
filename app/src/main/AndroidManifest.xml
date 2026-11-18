@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- صلاحيات الإنترنت والشبكة -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- ✅ صلاحية تعديل إعدادات النظام (ضرورية لعمل مؤقت شاشة التوقف) -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
+    <!-- صلاحيات إضافية للـ TV -->
+    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA"/>
+
+    <!-- دعم أجهزة التلفاز (بدون شاشة لمس) -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+    <uses-feature android:name="android.software.leanback" android:required="false"/>
+
+    <!-- رؤية الحزم (Android 11+): مطلوبة لعرض التطبيقات وزر Android TV -->
+    <queries>
+        <intent><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent>
+        <intent><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent>
+        <intent><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.HOME"/></intent>
+        <package android:name="com.android.vending"/>
+        <package android:name="com.android.tv.settings"/>
+        <package android:name="com.google.android.apps.tv.launcherx"/>
+        <package android:name="com.google.android.tvlauncher"/>
+        <package android:name="com.google.android.apps.tv.launcher"/>
+    </queries>
+
+    <application
+        android:label="ثيم الصالة"
+        android:icon="@drawable/banner"
+        android:banner="@drawable/banner"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+
+        <!-- الشاشة الرئيسية (اللانشر) -->
+        <activity android:name=".HomeActivity" android:exported="true"
+            android:launchMode="singleTask" android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <!-- شاشة الإعدادات -->
+        <activity android:name=".SettingsActivity" android:exported="false"/>
+
+        <!-- شاشة التوقف (الواجهة) -->
+        <activity android:name=".ScreensaverActivity" android:exported="false" android:screenOrientation="landscape"/>
+
+        <!-- شاشة اختيار الصور -->
+        <activity android:name=".PickImagesActivity" android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+
+        <!-- خدمة شاشة التوقف (DreamService) -->
+        <service android:name=".SaverService" android:exported="true"
+            android:label="ثيم الصالة" android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </service>
+
+        <!-- خدمة أزرار الريموت (AccessibilityService) -->
+        <service android:name=".KeyService" android:exported="true"
+            android:label="TV Theme Keys"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/key_service"/>
+        </service>
+
+    </application>
+</manifest>

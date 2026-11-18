@@ -112,8 +112,120 @@ class HomeActivity : Activity() {
     private fun refresh() { Data.clearCache(); setContentView(build()) }
 
     private fun dialogList(title: String, opts: List<Pair<String, () -> Unit>>) {
-        AlertDialog.Builder(this).setTitle(title).setItems(opts.map { it.first }.toTypedArray()) { _, i -> opts[i].second() }.show()
+    if (opts.isEmpty()) return
+
+    val neon = NeonStyle.neon(this)
+    val radius = dp(12).toFloat()
+
+    // الحاوية الرئيسية للقائمة
+    val panel = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(22), dp(20), dp(22), dp(20))
     }
+
+    // عنوان القائمة
+    val heading = TextView(this).apply {
+        text = title
+        textSize = 21f
+        setTextColor(Color.WHITE)
+        gravity = Gravity.CENTER_VERTICAL or
+            if (Prefs.s(this@HomeActivity, "lang", "ar") == "en")
+                Gravity.LEFT else Gravity.RIGHT
+        setPadding(dp(8), dp(4), dp(8), dp(16))
+    }
+
+    panel.addView(
+        heading,
+        LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(54)
+        )
+    )
+
+    // عناصر القائمة
+    val listContainer = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+    }
+
+    val buttons = mutableListOf<TextView>()
+
+    opts.forEach { option ->
+        val item = TextView(this).apply {
+            text = option.first
+            textSize = 18f
+            setTextColor(Color.WHITE)
+            gravity = NeonStyle.gravity(this@HomeActivity)
+            setPadding(dp(18), dp(8), dp(18), dp(8))
+
+            isFocusable = true
+            isFocusableInTouchMode = true
+            isClickable = true
+
+            background = NeonStyle.bg(neon, radius, 0)
+
+            setOnFocusChangeListener { view, focused ->
+                NeonStyle.look(view, neon, radius, focused)
+            }
+        }
+
+        listContainer.addView(
+            item,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(56)
+            ).apply {
+                bottomMargin = dp(8)
+            }
+        )
+
+        buttons.add(item)
+    }
+
+    val scroll = ScrollView(this).apply {
+        isFillViewport = true
+        addView(
+            listContainer,
+            ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+    }
+
+    panel.addView(
+        scroll,
+        LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    )
+
+    val dialog = AlertDialog.Builder(this)
+        .setView(panel)
+        .create()
+
+    buttons.forEachIndexed { index, item ->
+        item.setOnClickListener {
+            dialog.dismiss()
+            opts[index].second.invoke()
+        }
+    }
+
+    dialog.setOnShowListener {
+        NeonStyle.styleDialog(dialog, neon)
+
+        dialog.window?.setLayout(
+            minOf(dp(460), (resources.displayMetrics.widthPixels * 0.55f).toInt()),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        buttons.firstOrNull()?.post {
+            buttons.firstOrNull()?.requestFocus()
+        }
+    }
+
+    dialog.show()
+}
 
     private fun editPref(title: String, key: String, def: String) {
         val et = EditText(this).apply { setText(Prefs.s(this@HomeActivity, key, def)) }
